@@ -1,5 +1,8 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
 public class Main {
-     
+    //////tHE CARDS////////
     enum Rank {
         ACE("A"), TWO("2"), THREE("3"), FOUR("4"), FIVE("5"), SIX("6"),
         SEVEN("7"), EIGHT("8"), NINE("9"), TEN("10"), JACK("J"), QUEEN("Q"), KING("K");
@@ -16,7 +19,7 @@ public class Main {
     }
 
     enum Suit {
-        SPADE,CLUB,HEART,DIAMOND
+        SPADES,CLUBS,HEARTS,DIAMONDS
     }
 
     public static class Card{
@@ -35,8 +38,170 @@ public class Main {
 
         return card;
     }
+
+    
+    ////// THE DECK //////////
+
+    static ArrayList<Card> deck = new ArrayList<>();
+    
+    public static void resetDeck(){
+        deck.clear();
+        for (Rank rank : Rank.values()){
+            for (Suit suit : Suit.values()){
+                Card card = new Card();
+                card.rank = rank;
+                card.suit = suit;
+                deck.add(card);
+            }
+        }
+    }
+    
+    public static Card getCardFromDeck(){
+        int i = (int)((Math.random())*(deck.size()));
+        Card card = deck.get(i);
+        deck.remove(i);
+        return card;
+    }
+
+    /////// PLAYERS ///////////
+ 
+    public static class Player{
+        private String name;
+        private int balance;
+        private Card card1;
+        private Card card2;
+        private int bet;
+        private boolean isInGame;
+
+        public Player(String name, int balance){
+            this.name = name;
+            this.balance = balance;
+            this.isInGame = true;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getBalance(){
+            return balance;
+        }
+        
+        public int getBet(){
+            return bet;
+        }
+    }
+    
+    
+    ////NPC LOGIC///////////////
+    
+    public static int getSmallBlind(Player[] players, int dealer){
+        if (dealer == 2){
+            Scanner sc = new Scanner(System.in);
+            System.out.println("Enter small blind: ");
+            while (!sc.hasNextInt()) {
+                System.out.println("A number, please?");
+                sc.next();
+            }
+            return sc.nextInt();
+            
+        }
+        else{
+            return (int)(players[dealer+1].getBalance()/100);
+        }
+    }
+
+
+
+    ////// round ///////////////
+    public static void bettingRound(Player[] players, int pot, int startingPlayer, int currentBet){
+
+        boolean bettingDone = false;
+        int currentPlayer = startingPlayer-1;
+
+        while(!bettingDone){
+            currentPlayer = (currentPlayer+1)%(players.length);
+            
+            if (players[currentPlayer].isInGame == false){continue;}
+
+        }
+    }
+    
+    public static void playRound(Player[] players, int dealer){
+
+        int pot = 0;
+        
+        for(Player player : players){
+            player.card1 = getCardFromDeck();
+            player.card2 = getCardFromDeck();
+            player.bet = 0;
+
+        }
+
+        System.out.printf("your cards are: %s of %s and %s of %s\n", players[0].card1.rank, players[0].card1.suit, players[0].card2.rank, players[0].card2.suit);
+
+
+        int smallBlind = getSmallBlind(players, dealer);
+        int bigBlind = smallBlind*2;
+        System.out.printf("small blind: %d\nbig blind: %d\n",smallBlind,bigBlind);
+
+        int smallPlayer = (dealer+1)%players.length;
+        int bigPlayer = (dealer+2)%players.length;
+
+        //players[smallPlayer].balance -= smallBlind;
+        //players[bigPlayer].balance -= bigBlind;
+
+        players[smallPlayer].bet += smallBlind;
+        players[bigPlayer].bet += bigBlind;
+        pot += smallBlind+bigBlind;
+
+        bettingRound(players, pot, bigPlayer+1, bigBlind);
+
+    }
+
+
+    /////// some funcs ///////////
+    
+    public static int getStartingBalance(){
+        
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter starting balance: ");
+        while (!sc.hasNextInt()) {
+            System.out.println("A number, please?");
+            sc.next();
+        }
+        return sc.nextInt();
+    }
+ 
     public static void main(String[] args){
-        Card card = generateRandomCard();
-        System.out.println(String.format("Random card is a %s of %s", card.rank.getDisplay(), card.suit));
+        
+        resetDeck();
+        
+        int startingBalance = getStartingBalance();
+
+        //get player name
+        Scanner playerName = new Scanner(System.in);
+        System.out.println("Enter Player Name: ");
+        
+        Player user = new Player(playerName.nextLine(), startingBalance);
+
+        System.out.printf("Player name: %s    balance: %s\n",user.getName(),user.getBalance());
+
+        //npcs
+        Player bot1 = new Player("Bot1", startingBalance);
+        Player bot2 = new Player("Bot2", startingBalance);
+
+        Player[] players = {user,bot1,bot2};
+
+        Boolean newRound = true;
+        int round = -1;
+        while(newRound){
+            round++;
+            int dealer = (round+2)%3;
+            playRound(players, dealer);
+            
+            if(round==1){newRound = false;}
+        }
+
     }
 }
