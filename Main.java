@@ -114,16 +114,86 @@ public class Main {
 
 
     ////// round ///////////////
+    
+    public static int choicePrompt(){
+        
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Your turn.. (0: Fold, 1: Call, 2: Raise): ");
+        
+        while (!sc.hasNextInt()) {
+            System.out.println("Not a valid choice..");
+            sc.next(); // discard invalid input
+        }
+        
+        int choice = sc.nextInt();
+        while (choice != 0 && choice != 1 && choice != 2) {
+            System.out.println("Not a valid choice..");
+            choice = sc.nextInt();
+        }
+        
+
+        return choice;
+    }
+
+    public static int raisePrompt(Player player, int bet){
+        
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Raise to: ");
+        
+        while (!sc.hasNextInt()) {
+            System.out.println("A number, please?");
+            sc.next(); // discard invalid input
+        }
+        
+        int newBet = sc.nextInt();
+        if (newBet > player.balance || newBet <= bet){
+            System.out.println("Invalid number");
+            newBet = raisePrompt(player, bet);
+        }
+        
+        return newBet;
+    }
+
+    public static void roundOver(Player winner, int pot){
+        winner.balance += pot;
+        System.out.printf("Winner: %s ($%d)",winner.getName(),pot);
+        pot = 0;
+        return;
+    }
+
     public static void bettingRound(Player[] players, int pot, int startingPlayer, int currentBet){
 
         boolean bettingDone = false;
         int currentPlayer = startingPlayer-1;
+        int playerCountInGame = players.length;
+        int called = 0;
 
         while(!bettingDone){
             currentPlayer = (currentPlayer+1)%(players.length);
             
-            if (players[currentPlayer].isInGame == false){continue;}
+            if (players[currentPlayer].isInGame == false){called++; continue;}
 
+            if (currentPlayer == 0){
+                switch (choicePrompt()){   // 0: Fold 1: Call 2: Raise kodikas gia seira paixth
+                    case 0:  //fold
+                        players[currentPlayer].isInGame = false;
+                        players[currentPlayer].balance -= currentBet; //////////// feugei apo to balance thelei ftiaksimo isos
+                        playerCountInGame--;
+                        break;
+                    case 1: //call
+                        called++;
+                        break;
+                    case 2: //raise
+                        currentBet = raisePrompt(players[currentPlayer], currentBet);
+                        called = 1;
+                }
+            }
+            else {} //// KODIKAS GIA SEIRA NPC
+            
+            
+            if (called == players.length){
+                bettingDone = true;
+            }                                  ///// telos
         }
     }
     
