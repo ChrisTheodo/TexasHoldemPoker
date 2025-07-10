@@ -171,7 +171,10 @@ public class Main {
         while(!bettingDone){
             currentPlayer = (currentPlayer+1)%(players.length);
             
-            if (players[currentPlayer].isInGame == false){called++; continue;}
+            if (players[currentPlayer].isInGame == false){
+                called++;
+                continue;
+            }
 
             if (currentPlayer == 0){
                 switch (choicePrompt()){   // 0: Fold 1: Call 2: Raise kodikas gia seira paixth
